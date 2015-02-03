@@ -4,7 +4,7 @@ import json
 import re
 from enum import Enum
 
-from .geometry import Size, Point, Box
+from .geometry import Size, Point, Box, Rectangle
 
 Position = Enum("Position", "left over right under")
 Alignment = Enum("Alignment", "center top bottom left right")
@@ -69,9 +69,10 @@ class Element:
 
 class Document:
     """A document that documents elements in a screenshot."""
-    def __init__(self, name):
+    def __init__(self, name, crop=None):
         self.name = name
         self.elements = []
+        self.crop = crop
 
     def add_element(self, *elements, tooltip=None):
         for element in elements:
@@ -119,6 +120,7 @@ class ScreenshotEncoder(json.JSONEncoder):
         elif isinstance(obj, Document):
             return {
                 "name": obj.name,
+                "crop": obj.crop,
                 "elements": [self.default(element) for element in obj.elements],
             }
         elif isinstance(obj, Element):
@@ -151,7 +153,7 @@ class ScreenshotDecoder(json.JSONDecoder):
     def get_documents(self, documents):
         ret = []
         for document in documents:
-            obj = Document(document["name"])
+            obj = Document(document["name"], Rectangle(*document["crop"]))
             obj.add_element(*self.get_elements(document["elements"]))
             ret.append(obj)
         return ret

@@ -37,6 +37,8 @@ def draw_tooltip(draw, tooltip, element, image_size, config):
 def process_document(base_image, document, config, output):
     """Process a single document and create a documented screenshot."""
     img = Image.open(base_image).copy()
+    if document.crop is not None:
+        img = img.crop(document.crop)
 
     draw = ImageDraw.Draw(img)
 
