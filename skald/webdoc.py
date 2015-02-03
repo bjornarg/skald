@@ -16,10 +16,10 @@ def get_output_file(image_path, config):
     output = os.path.join(config.output, relative_image_dir, image_name)
     return output
 
-def draw_tooltip(font, draw, tooltip, element, config):
-    """Draws a tooltip on the image.
+def draw_tooltip(draw, tooltip, element, config):
+    """Draws a tooltip on the image."""
+    font = config.font.get_font()
 
-    """
     textarea = TextArea.from_lines(
         lines=tooltip.lines,
         font=font,
@@ -27,30 +27,27 @@ def draw_tooltip(font, draw, tooltip, element, config):
         padding=config.tooltip.padding,
         align=TextAlign.right)
 
-    text_position = get_box_position(element, tooltip, textarea.size, config.tooltip.margin)
-    text_box = Box(point=text_position, size=textarea.size)
-    draw.rectangle(text_box.rectangle, fill=config.tooltip.color)
+    textarea.position = get_box_position(element, tooltip, textarea.size, config.tooltip.margin)
+
+    draw.rectangle(textarea.rectangle, fill=config.tooltip.color)
     for i, line in enumerate(tooltip.lines):
-        position = textarea.get_position(text_position, i)
+        position = textarea.get_line_position(i)
         draw.text(position, line, font=font, fill=config.font.color)
 
 def process_document(base_image, document, config, output):
+    """Process a single document and create a documented screenshot."""
     img = Image.open(base_image).copy()
-
-    font = config.font.get_font()
 
     draw = ImageDraw.Draw(img)
 
     for element in document.elements:
         for tooltip in element.tooltips:
-            draw_tooltip(font, draw, tooltip, element, config)
+            draw_tooltip(draw, tooltip, element, config)
 
     img.save(output)
 
 def process_screenshots(screenshots, config):
-    """Processes each screenshot to generate a documented screenshot.
-
-    """
+    """Processes each screenshot to generate a documented screenshot."""
     for screenshot in screenshots:
         metadata = load(screenshot["metadata"])
         for document in metadata.documents:
@@ -58,9 +55,7 @@ def process_screenshots(screenshots, config):
             process_document(metadata.image_path, document, config, output)
 
 def get_screenshots(path):
-    """Retrieves all screenshots with JSON metadata from the specified path.
-
-    """
+    """Retrieves all screenshots with JSON metadata from the specified path."""
     json_files = {}
     image_files = {}
 

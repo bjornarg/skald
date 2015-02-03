@@ -170,7 +170,7 @@ class ScreenshotDecoder(json.JSONDecoder):
 def save(screenshot, driver):
     if not os.path.exists(screenshot.path):
         os.mkdir(screenshot.path)
-    
+
     driver.save_screenshot(screenshot.image_path)
     with open(screenshot.meta_path, "w") as json_file:
         json.dump(screenshot, json_file, cls=ScreenshotEncoder)

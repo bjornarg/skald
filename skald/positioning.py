@@ -41,5 +41,4 @@ def get_box_position(element, tooltip, box, margin):
     if tooltip.positions:
         choices = tooltip.positions
     for choice in choices:
-        func = positions.get(choice)
-        return func(element, tooltip, box, margin)
+        return positions.get(choice)(element, tooltip, box, margin)

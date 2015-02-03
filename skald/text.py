@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from PIL import ImageFont
 
-from .geometry import Size, Point
+from .geometry import Size, Point, Rectangle, Box
 
 from enum import Enum
 
@@ -14,6 +14,7 @@ class TextArea:
         self.align = align
         self.lines = lines
         self.wrapper = wrapper
+        self.position = Point(0, 0)
 
     @classmethod
     def from_lines(cls, lines, font, line_spacing, **kwargs):
@@ -36,7 +37,7 @@ class TextArea:
         )
 
 
-    def get_y_offset(self, line_number):
+    def _get_y_offset(self, line_number):
         offset = self.padding
         for i, line in enumerate(self.lines):
             if i >= line_number:
@@ -45,7 +46,7 @@ class TextArea:
         offset += line_number*self.line_spacing
         return offset
 
-    def get_x_offset(self, line_number):
+    def _get_x_offset(self, line_number):
         offset = self.padding
         if self.align == TextAlign.center:
             offset += (self.wrapper.width - self.lines[line_number].width) / 2
@@ -53,18 +54,17 @@ class TextArea:
             offset += (self.wrapper.width - self.lines[line_number].width)
         return offset
 
-    def get_offset(self, line_number):
-        """Gets the offset for a given line.
-
-        """
+    def get_line_offset(self, line_number):
+        """Gets the internal offset of a given line relative to the textarea"""
         return Point(
-            x=self.get_x_offset(line_number),
-            y=self.get_y_offset(line_number)
+            x=self._get_x_offset(line_number),
+            y=self._get_y_offset(line_number)
         )
 
-    def get_position(self, start, line_number):
-        offset = self.get_offset(line_number)
-        return start + offset
+    def get_line_position(self, line_number):
+        """Gets the absolute position of the given line number"""
+        offset = self.get_line_offset(line_number)
+        return self.position + offset
 
     @property
     def width(self):
@@ -77,3 +77,11 @@ class TextArea:
     @property
     def size(self):
         return Size(self.width, self.height)
+
+    @property
+    def box(self):
+        return Box(point=self.position, size=self.size)
+
+    @property
+    def rectangle(self):
+        return self.box.rectangle

@@ -22,7 +22,7 @@ def hex_to_tuple(color):
 
 def get_color(color, default):
     """Convert `color` into type `Color`.
-    
+
     `color` can either be a HTML-style RGB(A) hex-string, or a 3- or 4-tuple
     with (red, green, blue, alpha) values from 0 to 255.
     """
