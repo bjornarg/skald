@@ -33,7 +33,10 @@ class Tooltip:
     """A tooltip connected to a element."""
     def __init__(self, lines, positions=None, alignments=None, force=False,
             width=None):
-        self.lines = lines
+        if isinstance(lines, str):
+            self.lines = lines.split("\n")
+        else:
+            self.lines = lines
         self.width = width
         self.positions = get_positions(positions)
         self.alignments = get_alignments(alignments)
@@ -53,7 +56,12 @@ class Element:
         self.tooltips = []
 
     def add_tooltip(self, *tooltips):
-        self.tooltips.extend(tooltips)
+        for tooltip in tooltips:
+            if isinstance(tooltip, Tooltip):
+                self.tooltips.append(tooltip)
+            else:
+                tooltip_rep = Tooltip(tooltip)
+                self.tooltips.append(tooltip_rep)
 
     @property
     def box(self):
@@ -65,8 +73,17 @@ class Document:
         self.name = name
         self.elements = []
 
-    def add_element(self, *elements):
-        self.elements.extend(elements)
+    def add_element(self, *elements, tooltip=None):
+        for element in elements:
+            if isinstance(element, Element):
+                if tooltip is not None:
+                    element.add_tooltip(tooltip)
+                self.elements.append(element)
+            else:
+                element_rep = Element(element)
+                if tooltip is not None:
+                    element_rep.add_tooltip(tooltip)
+                self.elements.append(element_rep)
 
 class Screenshot:
     """A single screenshot.
@@ -119,7 +136,7 @@ class ScreenshotEncoder(json.JSONEncoder):
                 "alignments": obj.alignments,
                 "force": obj.force
             }
-        elif isinstance(obj, Position):
+        elif isinstance(obj, Enum):
             return obj.name
         return super().default(obj)
 
