@@ -6,8 +6,8 @@ from enum import Enum
 
 from .geometry import Size, Point, Box
 
-Position = Enum("Position", "over under left right")
-Alignment = Enum("Alignment", "top bottom left right center")
+Position = Enum("Position", "left over right under")
+Alignment = Enum("Alignment", "center top bottom left right")
 
 def get_positions(positions):
     if positions is None:

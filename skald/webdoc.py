@@ -16,7 +16,7 @@ def get_output_file(image_path, config):
     output = os.path.join(config.output, relative_image_dir, image_name)
     return output
 
-def draw_tooltip(draw, tooltip, element, config):
+def draw_tooltip(draw, tooltip, element, image_size, config):
     """Draws a tooltip on the image."""
     font = config.font.get_font()
 
@@ -25,9 +25,9 @@ def draw_tooltip(draw, tooltip, element, config):
         font=font,
         line_spacing=config.tooltip.line_spacing,
         padding=config.tooltip.padding,
-        align=TextAlign.right)
+        align=TextAlign.center)
 
-    textarea.position = get_box_position(element, tooltip, textarea.size, config.tooltip.margin)
+    textarea.position = get_box_position(element, tooltip, textarea.size, image_size, config.tooltip.margin)
 
     draw.rectangle(textarea.rectangle, fill=config.tooltip.color)
     for i, line in enumerate(tooltip.lines):
@@ -40,9 +40,11 @@ def process_document(base_image, document, config, output):
 
     draw = ImageDraw.Draw(img)
 
+    image_size = Size(*img.size)
+
     for element in document.elements:
         for tooltip in element.tooltips:
-            draw_tooltip(draw, tooltip, element, config)
+            draw_tooltip(draw, tooltip, element, image_size, config)
 
     img.save(output)
 
