@@ -9,11 +9,10 @@ from .text import TextArea, TextAlign
 from .positioning import get_box_position
 from .definitions import load
 
-def get_output_file(image_path, config):
+def get_output_file(image_path, document_name, config):
     relative_image_path = os.path.relpath(image_path, config.input)
     relative_image_dir = os.path.dirname(relative_image_path)
-    image_name = os.path.basename(image_path)
-    output = os.path.join(config.output, relative_image_dir, image_name)
+    output = os.path.join(config.output, relative_image_dir, "%s.png" % document_name)
     return output
 
 def draw_tooltip(draw, tooltip, element, image_size, config):
@@ -55,7 +54,7 @@ def process_screenshots(screenshots, config):
     for screenshot in screenshots:
         metadata = load(screenshot["metadata"])
         for document in metadata.documents:
-            output = get_output_file(metadata.image_path, config)
+            output = get_output_file(metadata.image_path, document.name, config)
             process_document(metadata.image_path, document, config, output)
 
 def get_screenshots(path):
