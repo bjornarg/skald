@@ -7,6 +7,9 @@ from .definitions import Position, Alignment
 Choice = namedtuple("Choice", ["point", "punishment"])
 
 def adjust_x_position(choice, box, bounds, margin):
+    """Adjusts the position of the box in the horizontal plane to be inside the
+    bounds.
+    """
     adjust = 0
     if choice.point.x < margin:
         adjust = margin - choice.point.x
@@ -16,6 +19,9 @@ def adjust_x_position(choice, box, bounds, margin):
     return Choice(point=point, punishment=choice.punishment + abs(adjust))
 
 def adjust_y_position(choice, box, bounds, margin):
+    """Adjusts the position of the box in the vertical plane to be inside the
+    bounds.
+    """
     adjust = 0
     if choice.point.y < margin:
         adjust = margin - choice.point.y
@@ -24,7 +30,10 @@ def adjust_y_position(choice, box, bounds, margin):
     point = Point(x=choice.point.x, y=choice.point.y+adjust)
     return Choice(point=point, punishment=choice.punishment + abs(adjust))
 
-def align_y(element, box, alignment):
+def vertical_align(element, box, alignment):
+    """Finds the vertical position of `box` to be aligned with `element`
+    according to the given `alignment`.
+    """
     if alignment == Alignment.top:
         return element.location.y
     elif alignment == Alignment.bottom:
@@ -33,7 +42,10 @@ def align_y(element, box, alignment):
         vertical_center = element.location.y + element.size.height / 2
         return vertical_center - box.height / 2
 
-def align_x(element, box, alignment):
+def horizontal_align(element, box, alignment):
+    """Finds the horizontal position of `box` to be aligned with `element`
+    according to the given `alignment`.
+    """
     if alignment == Alignment.left:
         return element.location.x
     elif alignment == Alignment.right:
@@ -44,7 +56,7 @@ def align_x(element, box, alignment):
 
 def get_left_box_position(element, tooltip, box, image_size, margin, alignment):
     x = element.location.x - box.width - margin
-    y = align_y(element, box, alignment)
+    y = vertical_align(element, box, alignment)
     point = Point(x, y)
 
     punishment = 0
@@ -60,7 +72,7 @@ def get_left_box_position(element, tooltip, box, image_size, margin, alignment):
 
 def get_right_box_position(element, tooltip, box, image_size, margin, alignment):
     x = element.location.x + element.size.width + margin
-    y = align_y(element, box, alignment)
+    y = vertical_align(element, box, alignment)
     point = Point(x, y)
     punishment = 0
 
@@ -74,7 +86,7 @@ def get_right_box_position(element, tooltip, box, image_size, margin, alignment)
     return choice
 
 def get_under_box_position(element, tooltip, box, image_size, margin, alignment):
-    x = align_x(element, box, alignment)
+    x = horizontal_align(element, box, alignment)
     y = element.location.y + element.size.height + margin
 
     point = Point(x, y)
@@ -90,7 +102,7 @@ def get_under_box_position(element, tooltip, box, image_size, margin, alignment)
     return choice
 
 def get_over_box_position(element, tooltip, box, image_size, margin, alignment):
-    x = align_x(element, box, alignment)
+    x = horizontal_align(element, box, alignment)
     y = element.location.y - box.height - margin
 
     point = Point(x, y)
