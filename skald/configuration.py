@@ -76,11 +76,11 @@ class Configuration:
 
     @classmethod
     def from_dict(cls, dictionary):
-        font = Font(**dictionary.get("font", {}))
-        tooltip = Tooltip(**dictionary.get("tooltip", {}))
-        input = dictionary.get("input", "skald")
-        output = dictionary.get("output", "skald")
-        return cls(font=font, tooltip=tooltip, input=input, output=output)
+        if "font" in dictionary:
+            dictionary["font"] = Font(**dictionary.get("font"))
+        if "tooltip" in dictionary:
+            dictionary["tooltip"] = Tooltip(**dictionary.get("tooltip"))
+        return cls(**dictionary)
 
 def read_configuration(path=None):
     """Reads skald configuration.
