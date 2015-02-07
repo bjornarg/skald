@@ -138,7 +138,7 @@ def get_over_box_position(anchor_box, size, bounds, margin, alignment, avoid):
             choice = Choice(point=choice.point, punishment=float("inf"))
     return choice
 
-def get_box_pos(anchor_box, size, bounds, margin, positions, alignments, avoid):
+def _get_box_position(anchor_box, size, bounds, margin, positions, alignments, avoid):
     """Attempts to find the ideal position of a box of `size` anchored to
     `anchor_box`.
 
@@ -162,12 +162,6 @@ def get_box_pos(anchor_box, size, bounds, margin, positions, alignments, avoid):
     return choice.point
 
 def get_box_position(element, tooltip, size, bounds, margin, avoid):
-    funcs = {
-        Position.left: get_left_box_position,
-        Position.right: get_right_box_position,
-        Position.over: get_over_box_position,
-        Position.under: get_under_box_position,
-    }
     positions = tuple(Position)
     if tooltip.positions:
         positions = tooltip.positions
@@ -175,7 +169,7 @@ def get_box_position(element, tooltip, size, bounds, margin, avoid):
     if tooltip.alignments:
         alignments = tooltip.alignments
 
-    return get_box_pos(
+    return _get_box_position(
             anchor_box=element.box,
             size=size,
             bounds=bounds,
