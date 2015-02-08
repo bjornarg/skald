@@ -4,7 +4,7 @@ import json
 import re
 from enum import Enum
 
-from .geometry import Size, Point, Box, Rectangle
+from .geometry import Size, Point, Rectangle
 
 Position = Enum("Position", "left over right under")
 Alignment = Enum("Alignment", "center top bottom left right")
@@ -64,8 +64,8 @@ class Element:
                 self.tooltips.append(tooltip_rep)
 
     @property
-    def box(self):
-        return Box(size=self.size, point=self.location)
+    def rectangle(self):
+        return Rectangle.from_sizes(size=self.size, point=self.location)
 
 class Document:
     """A document that documents elements in a screenshot."""

@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
 import os
 import json
+from itertools import product
 
 from PIL import Image, ImageFont, ImageDraw
 
-from .geometry import Size, Point, Box, Rectangle
+from .geometry import Size, Point, Rectangle
 from .text import TextArea, TextAlign
-from .positioning import get_box_position
+from .positioning import get_box_position, Choice
 from .definitions import load
 
 def get_output_file(image_path, document_name, config):
@@ -19,6 +20,7 @@ def draw_textarea(draw, textarea, config):
     """Draws a tooltip on the image."""
     font = config.font.get_font()
 
+    print("Drawing textarea at", textarea.rectangle)
     draw.rectangle(textarea.rectangle, fill=config.tooltip.color)
     for i, line in enumerate(textarea.text):
         position = textarea.get_line_position(i)
@@ -34,10 +36,42 @@ def get_textarea(tooltip, element, bounds, config, avoid):
         padding=config.tooltip.padding,
         align=TextAlign.center)
 
-    textarea.position = get_box_position(element, tooltip, textarea.size, bounds, config.tooltip.margin, avoid=avoid)
+    textarea.choices = get_box_position(element, tooltip, textarea.size, bounds, config.tooltip.margin, avoid=avoid)
 
     return textarea
 
+
+def make_combinations(textareas):
+    choice_lists = []
+    for textarea in textareas:
+        choices = []
+        for choice in textarea.choices:
+            choices.append({"textarea": textarea, "choice": choice})
+        choice_lists.append(choices)
+    return list(product(*choice_lists))
+
+def best_combinations(combinations):
+    """Selects the best combination of positions for `textareas` based on each
+    textarea's positional choices and their relative punshiment, disallowing
+    any overlap between textareas.
+    """
+    indices = set()
+    for i, combination in enumerate(combinations):
+        crash = False
+        for c1 in combination:
+            for c2 in combination:
+                if c1["textarea"] != c2["textarea"]:
+                    r1 = Rectangle.from_sizes(point=c1["choice"].point, size=c1["textarea"].size)
+                    r2 = Rectangle.from_sizes(point=c2["choice"].point, size=c2["textarea"].size)
+                    if r1 in r2:
+                        crash = True
+        if not crash:
+            indices.add(i)
+    combinations = [c for i, c in enumerate(combinations) if i in indices]
+    combinations.sort(key=lambda x: sum([y["choice"].punishment for y in x]))
+    combination = combinations[0]
+    for area in combination:
+        area["textarea"].position = area["choice"].point
 
 def process_document(base_image, document, config, output):
     """Process a single document and create a documented screenshot."""
@@ -49,6 +83,8 @@ def process_document(base_image, document, config, output):
 
     image_size = Size(*img.size)
 
+    textareas = []
+
     for element in document.elements:
         for tooltip in element.tooltips:
             textarea = get_textarea(tooltip=tooltip,
@@ -56,7 +92,13 @@ def process_document(base_image, document, config, output):
                     bounds=image_size,
                     config=config,
                     avoid=document.elements)
-            draw_textarea(draw, textarea, config)
+            textareas.append(textarea)
+
+    combinations = make_combinations(textareas)
+    best_combinations(combinations)
+
+    for textarea in textareas:
+        draw_textarea(draw, textarea, config)
 
     print("Saving to file", output)
     img.save(output)

@@ -2,6 +2,7 @@
 from collections import namedtuple
 
 Size = namedtuple("Size", ["width", "height"])
+Box = namedtuple("Box", ["point", "size"])
 
 class Point(namedtuple("Point", ["x", "y"])):
     """Point in a two-dimensional space.
@@ -32,20 +33,23 @@ class Rectangle(namedtuple("Rectangle", ["x0", "y0", "x1", "y1"])):
             return True
         return False
 
+    @classmethod
+    def from_sizes(cls, size, point):
+        return cls(
+            x0=point.x,
+            y0=point.y,
+            x1=point.x+size.width,
+            y1=point.y+size.height
+        )
+
     @property
     def center(self):
         """Returns the point in the center of the rectangle."""
         return Point(x=(self.x0+self.x1)/2, y=(self.y0+self.y1)/2)
 
-
-class Box(namedtuple("Box", ["point", "size"])):
-    __slots__ = ()
-
     @property
-    def rectangle(self):
-        return Rectangle(
-            x0=self.point.x,
-            y0=self.point.y,
-            x1=self.point.x+self.size.width,
-            y1=self.point.y+self.size.height
+    def box(self):
+        return Box(
+            point=Point(x=self.x0, y=self.y0),
+            size=Size(width=self.x1-self.x0, height=self.y1-self.y0)
         )
