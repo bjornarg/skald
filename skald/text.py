@@ -8,11 +8,12 @@ from enum import Enum
 TextAlign = Enum("TextAlign", "left right center")
 
 class TextArea:
-    def __init__(self, wrapper, lines, line_spacing, padding, align):
+    def __init__(self, text, wrapper, line_sizes, line_spacing, padding, align):
         self.line_spacing = line_spacing
         self.padding = padding
         self.align = align
-        self.lines = lines
+        self.line_sizes = line_sizes
+        self.text = text
         self.wrapper = wrapper
         self.position = Point(0, 0)
 
@@ -31,15 +32,15 @@ class TextArea:
 
         return cls(
             wrapper=Size(width, height),
-            lines=sizes,
+            text=lines,
+            line_sizes=sizes,
             line_spacing=line_spacing,
             **kwargs
         )
 
-
     def _get_y_offset(self, line_number):
         offset = self.padding
-        for i, line in enumerate(self.lines):
+        for i, line in enumerate(self.line_sizes):
             if i >= line_number:
                 break
             offset += line.height
@@ -49,9 +50,9 @@ class TextArea:
     def _get_x_offset(self, line_number):
         offset = self.padding
         if self.align == TextAlign.center:
-            offset += (self.wrapper.width - self.lines[line_number].width) / 2
+            offset += (self.wrapper.width - self.line_sizes[line_number].width) / 2
         elif self.align == TextAlign.right:
-            offset += (self.wrapper.width - self.lines[line_number].width)
+            offset += (self.wrapper.width - self.line_sizes[line_number].width)
         return offset
 
     def get_line_offset(self, line_number):

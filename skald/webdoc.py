@@ -15,8 +15,16 @@ def get_output_file(image_path, document_name, config):
     output = os.path.join(config.output, relative_image_dir, "%s.png" % document_name)
     return output
 
-def draw_tooltip(draw, tooltip, element, bounds, config, avoid):
+def draw_textarea(draw, textarea, config):
     """Draws a tooltip on the image."""
+    font = config.font.get_font()
+
+    draw.rectangle(textarea.rectangle, fill=config.tooltip.color)
+    for i, line in enumerate(textarea.text):
+        position = textarea.get_line_position(i)
+        draw.text(position, line, font=font, fill=config.font.color)
+
+def get_textarea(tooltip, element, bounds, config, avoid):
     font = config.font.get_font()
 
     textarea = TextArea.from_lines(
@@ -28,10 +36,8 @@ def draw_tooltip(draw, tooltip, element, bounds, config, avoid):
 
     textarea.position = get_box_position(element, tooltip, textarea.size, bounds, config.tooltip.margin, avoid=avoid)
 
-    draw.rectangle(textarea.rectangle, fill=config.tooltip.color)
-    for i, line in enumerate(tooltip.lines):
-        position = textarea.get_line_position(i)
-        draw.text(position, line, font=font, fill=config.font.color)
+    return textarea
+
 
 def process_document(base_image, document, config, output):
     """Process a single document and create a documented screenshot."""
@@ -45,7 +51,12 @@ def process_document(base_image, document, config, output):
 
     for element in document.elements:
         for tooltip in element.tooltips:
-            draw_tooltip(draw, tooltip, element, image_size, config, avoid=document.elements)
+            textarea = get_textarea(tooltip=tooltip,
+                    element=element,
+                    bounds=image_size,
+                    config=config,
+                    avoid=document.elements)
+            draw_textarea(draw, textarea, config)
 
     print("Saving to file", output)
     img.save(output)
