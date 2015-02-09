@@ -94,5 +94,5 @@ class TextArea:
 
     @choices.setter
     def choices(self, choices):
-        choices.sort(key=lambda x: x.punishment)
-        self._choices = [choice for choice in choices if choice.punishment < float("inf")]
+        choices.sort(key=lambda x: x.score)
+        self._choices = [choice for choice in choices if choice.score < float("inf")]

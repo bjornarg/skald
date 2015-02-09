@@ -36,7 +36,8 @@ def get_textarea(tooltip, element, bounds, config, avoid):
         padding=config.tooltip.padding,
         align=TextAlign.center)
 
-    textarea.choices = get_box_position(element, tooltip, textarea.size, bounds, config.tooltip.margin, avoid=avoid)
+    textarea.choices = get_box_position(element, tooltip, textarea.size,
+            bounds, config.tooltip.margin, avoid=avoid, scores=config.scores)
 
     return textarea
 
@@ -68,7 +69,7 @@ def best_combinations(combinations):
         if not crash:
             indices.add(i)
     combinations = [c for i, c in enumerate(combinations) if i in indices]
-    combinations.sort(key=lambda x: sum([y["choice"].punishment for y in x]))
+    combinations.sort(key=lambda x: sum([y["choice"].score for y in x]))
     combination = combinations[0]
     for area in combination:
         area["textarea"].position = area["choice"].point
