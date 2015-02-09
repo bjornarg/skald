@@ -7,7 +7,7 @@ from .definitions import Position, Alignment
 Choice = namedtuple("Choice", ["point", "punishment"])
 Avoid = namedtuple("Avoid", ["rectangle", "punishment"])
 
-def adjust_x_position(choice, size, bounds, margin):
+def adjust_x_position(choice, size, bounds, margin, punishment):
     """Adjusts the position of the box in the horizontal plane to be inside the
     bounds.
     """
@@ -17,9 +17,9 @@ def adjust_x_position(choice, size, bounds, margin):
     elif choice.point.x+size.width+margin > bounds.width:
         adjust = bounds.width - (choice.point.x + size.width + margin)
     point = Point(x=choice.point.x+adjust, y=choice.point.y)
-    return Choice(point=point, punishment=choice.punishment + abs(adjust))
+    return Choice(point=point, punishment=choice.punishment + abs(adjust) * punishment)
 
-def adjust_y_position(choice, size, bounds, margin):
+def adjust_y_position(choice, size, bounds, margin, punishment):
     """Adjusts the position of the box in the vertical plane to be inside the
     bounds.
     """
@@ -29,7 +29,7 @@ def adjust_y_position(choice, size, bounds, margin):
     elif choice.point.y+size.height+margin > bounds.height:
         adjust = bounds.height - (choice.point.y + size.height + margin)
     point = Point(x=choice.point.x, y=choice.point.y+adjust)
-    return Choice(point=point, punishment=choice.punishment + abs(adjust))
+    return Choice(point=point, punishment=choice.punishment + abs(adjust) * punishment)
 
 def vertical_align(anchor, size, alignment):
     """Finds the vertical position of `box` to be aligned with `anchor`
@@ -53,7 +53,8 @@ def horizontal_align(anchor, size, alignment):
     else:
         return anchor.center.x - size.width / 2
 
-def get_left_box_position(anchor, size, bounds, margin, alignment, avoid):
+def get_left_box_position(anchor, size, bounds, margin, alignment, avoid,
+        punishments):
     x = anchor.x0 - size.width - margin
     y = vertical_align(anchor, size, alignment)
     point = Point(x, y)
@@ -66,7 +67,7 @@ def get_left_box_position(anchor, size, bounds, margin, alignment, avoid):
         return Choice(point=point, punishment=float("inf"))
 
     choice = Choice(point=point, punishment=punishment)
-    choice = adjust_y_position(choice, size, bounds, margin)
+    choice = adjust_y_position(choice, size, bounds, margin, punishments)
 
     rect = Rectangle.from_sizes(point=choice.point, size=size)
     for element in avoid:
@@ -74,7 +75,8 @@ def get_left_box_position(anchor, size, bounds, margin, alignment, avoid):
             choice = Choice(point=choice.point, punishment=float("inf"))
     return choice
 
-def get_right_box_position(anchor, size, bounds, margin, alignment, avoid):
+def get_right_box_position(anchor, size, bounds, margin, alignment, avoid,
+        punishments):
     x = anchor.x1 + margin
     y = vertical_align(anchor, size, alignment)
     point = Point(x, y)
@@ -86,7 +88,7 @@ def get_right_box_position(anchor, size, bounds, margin, alignment, avoid):
         return Choice(point=point, punishment=float("inf"))
 
     choice = Choice(point=point, punishment=punishment)
-    choice = adjust_y_position(choice, size, bounds, margin)
+    choice = adjust_y_position(choice, size, bounds, margin, punishments)
 
     rect = Rectangle.from_sizes(point=choice.point, size=size)
     for element in avoid:
@@ -94,7 +96,8 @@ def get_right_box_position(anchor, size, bounds, margin, alignment, avoid):
             choice = Choice(point=choice.point, punishment=float("inf"))
     return choice
 
-def get_under_box_position(anchor, size, bounds, margin, alignment, avoid):
+def get_under_box_position(anchor, size, bounds, margin, alignment, avoid,
+        punishments):
     x = horizontal_align(anchor, size, alignment)
     y = anchor.y1 + margin
 
@@ -107,7 +110,7 @@ def get_under_box_position(anchor, size, bounds, margin, alignment, avoid):
         return Choice(point=point, punishment=float("inf"))
 
     choice = Choice(point=point, punishment=punishment)
-    choice = adjust_x_position(choice, size, bounds, margin)
+    choice = adjust_x_position(choice, size, bounds, margin, punishments.move)
 
     rect = Rectangle.from_sizes(point=choice.point, size=size)
     for element in avoid:
@@ -115,7 +118,8 @@ def get_under_box_position(anchor, size, bounds, margin, alignment, avoid):
             choice = Choice(point=choice.point, punishment=float("inf"))
     return choice
 
-def get_over_box_position(anchor, size, bounds, margin, alignment, avoid):
+def get_over_box_position(anchor, size, bounds, margin, alignment, avoid,
+        punishments):
     x = horizontal_align(anchor, size, alignment)
     y = anchor.y0 - size.height - margin
 
@@ -128,7 +132,7 @@ def get_over_box_position(anchor, size, bounds, margin, alignment, avoid):
         return Choice(point=point, punishment=float("inf"))
 
     choice = Choice(point=point, punishment=punishment)
-    choice = adjust_x_position(choice, size, bounds, margin)
+    choice = adjust_x_position(choice, size, bounds, margin, punishments.move)
 
     rect = Rectangle.from_sizes(point=choice.point, size=size)
     for element in avoid:
@@ -136,7 +140,8 @@ def get_over_box_position(anchor, size, bounds, margin, alignment, avoid):
             choice = Choice(point=choice.point, punishment=float("inf"))
     return choice
 
-def _get_box_position(anchor, size, bounds, margin, positions, alignments, avoid):
+def _get_box_position(anchor, size, bounds, margin, positions, alignments,
+        avoid, punishments):
     """Attempts to find the ideal position of a box of `size` anchored to
     `anchor`.
 
@@ -150,13 +155,15 @@ def _get_box_position(anchor, size, bounds, margin, positions, alignments, avoid
     choices = []
     for position in positions:
         for alignment in alignments:
-            choice = funcs.get(position)(anchor, size, bounds, margin, alignment, avoid)
+            choice = funcs.get(position)(anchor=anchor, size=size,
+                    bounds=bounds, margin=margin, alignment=alignment,
+                    avoid=avoid, punishments=punishments)
             choices.append(choice)
 
     choices.sort(key=lambda x: x.punishment)
     return choices
 
-def get_box_position(element, tooltip, size, bounds, margin, avoid):
+def get_box_position(element, tooltip, size, bounds, margin, avoid, punishments):
     positions = tuple(Position)
     if tooltip.positions:
         positions = tooltip.positions
@@ -171,4 +178,5 @@ def get_box_position(element, tooltip, size, bounds, margin, avoid):
             margin=margin,
             positions=positions,
             alignments=alignments,
-            avoid=avoid)
+            avoid=avoid,
+            punishments=punishments)

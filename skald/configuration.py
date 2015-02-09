@@ -36,6 +36,10 @@ def get_color(color, default):
         else:
             return Color(*color)
 
+class Punishments:
+    def __init__(self, move=1):
+        self.move = move
+
 class Font:
     """Defines a font."""
     def __init__(self, path=None, size=15, color=None):
@@ -62,8 +66,8 @@ class Tooltip:
         self.color = get_color(color, Color(50, 50, 185, 255))
 
 class Configuration:
-    def __init__(self, font=None, tooltip=None, input="skald",
-            output="skald"):
+    def __init__(self, font=None, tooltip=None, punishments=None,
+            input="skald", output="skald"):
 
         if font is None:
             font = Font()
@@ -71,6 +75,9 @@ class Configuration:
         if tooltip is None:
             tooltip = Tooltip()
         self.tooltip = tooltip
+        if punishments is None:
+            punishments = Punishments()
+        self.punishments = punishments
         self.input = input
         self.output = output
 
@@ -80,6 +87,8 @@ class Configuration:
             dictionary["font"] = Font(**dictionary.get("font"))
         if "tooltip" in dictionary:
             dictionary["tooltip"] = Tooltip(**dictionary.get("tooltip"))
+        if "punishments" in dictionary:
+            dictionary["punishments"] = Punishments(**dictionary.get("punishments"))
         return cls(**dictionary)
 
 def read_configuration(path=None):
