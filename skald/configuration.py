@@ -8,7 +8,15 @@ from PIL import ImageFont
 Color = namedtuple("Color", ["red", "green", "blue", "alpha"])
 
 def hex_to_tuple(color):
-    """Converts a HTML-style RGB(A) hex-string to a `Color`."""
+    """Converts a HTML-style RGB(A) hex-string to a
+    :py:class:`~skald.configuration.Color`.
+
+    :param color: A hex-string of length 6 or 8, giving RGB values for the
+        color. If of length 8, the last two will represent the alpha channel
+        of the color. Can optionally be prefixed with a ``#``.
+    :return: A :py:class:`~skald.configuration.Color` representation of the
+        color.
+    """
     if color.startswith("#"):
         color = color[1:]
     red = int(color[0:2], 16)
@@ -21,10 +29,11 @@ def hex_to_tuple(color):
     return Color(red, green, blue, alpha)
 
 def get_color(color, default):
-    """Convert `color` into type `Color`.
+    """Convert ``color`` into type :py:class:`~skald.configuration.Color`.
 
-    `color` can either be a HTML-style RGB(A) hex-string, or a 3- or 4-tuple
-    with (red, green, blue, alpha) values from 0 to 255.
+    :param color: Can either be a HTML-style RGB(A) hex-string, or a 3- or
+        4-tuple with (red, green, blue, alpha) values from 0 to 255.
+    :param default: The default color to use if ``color`` is ``None``.
     """
     if color is None:
         return default
@@ -37,21 +46,40 @@ def get_color(color, default):
             return Color(*color)
 
 class Scores:
+    """Scores are used to calculate how good a tooltip position is.
+
+    """
     def __init__(self, move=1):
+        """
+
+        :param move: Used to adjust the score when a tooltip needs to be moved
+            from it's initially calculated position, such as moving it from
+            outside of bounds to the inside. This is multiplied with the number
+            of pixels the tooltip is moved.
+        """
         self.move = move
 
 class Font:
-    """Defines a font."""
+    """Defines the font to be used when writing text in the documents.
+    
+    TrueType or OpenType fonts are supported, as long as Pillow is compiled
+    with FreeType library support.
+    """
     def __init__(self, path=None, size=15, color=None):
+        """
+
+        :param path: The path to the TrueType or OpenType font file.
+        :param size: Size of the font in points.
+        :param color: Color of the text used. See
+            :py:func:`~skald.configuration.get_color` for formats colors can be
+            given in.
+        """
         self.path = path
         self.size = size
         self.color = get_color(color, Color(255, 255, 255, 255))
 
     def get_font(self):
-        """Get a Pillow `ImageFont` instance representing this font.
-
-        If no `path` is specified, the default Pillow font is used.
-        """
+        """Get a :py:class:`~PIL.ImageFont` instance representing this font."""
         if self.path is None:
             return ImageFont.load_default()
         else:
@@ -68,6 +96,20 @@ class Tooltip:
 class Configuration:
     def __init__(self, font=None, tooltip=None, scores=None,
             input="skald", output="skald"):
+        """Create the base configuration class.
+
+        All ``None`` parameters will be populated with their classes defaults.
+
+        :param font: An instance of :py:class:`~skald.configuration.Font`
+            defining the font to be used.
+        :param tooltip: An instance of :py:class:`~skald.configuration.Tooltip`
+            defining settings for the tooltips.
+        :param scores: An instance of :py:class:`~skald.configuration.Scores`
+            defining how different adjustments made to tooltips affect the
+            score of the position.
+        :param input: Path to search for screenshots to document.
+        :param output: Path to place created documents.
+        """
 
         if font is None:
             font = Font()
@@ -83,6 +125,10 @@ class Configuration:
 
     @classmethod
     def from_dict(cls, dictionary):
+        """Creates an instance based on a dictionary.
+
+        Used to create an instance directly from a read configuration file.
+        """
         if "font" in dictionary:
             dictionary["font"] = Font(**dictionary.get("font"))
         if "tooltip" in dictionary:

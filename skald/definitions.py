@@ -94,19 +94,39 @@ class Screenshot:
 
     """
     def __init__(self, name, path):
+        """Create a new screenshot.
+
+        :param name: The that should be used to represent this screenshot.
+        :param path: The path this screenshot should be saved to.
+            This should be a directory, as `name` is used to create the actual
+            name of the file and metadata file. See
+            :py:attr:`~skald.definitions.Screenshot.image_path` and 
+            :py:attr:`~skald.definitions.Screenshot.meta_path`.
+        """
         self.name = name
         self.documents = []
         self.path = path
 
     def add_document(self, document):
+        """Add a document to the screenshot.
+        
+        :param document: A :py:class:`~skald.definitions.Document` defining a
+            document to be created from this screenshot.
+        """
         self.documents.append(document)
 
     @property
     def image_path(self):
+        """The path of the actual imagefile itself."""
         return os.path.join(self.path, "%s.png" % self.name)
 
     @property
     def meta_path(self):
+        """The path of the file containing metadata about the image.
+
+        This is where all the extra information about how to process the image
+        to create documents will be saved.
+        """
         return os.path.join(self.path, "%s.json" % self.name)
 
 class ScreenshotEncoder(json.JSONEncoder):
