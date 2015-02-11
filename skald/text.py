@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
+from enum import Enum
+
 from PIL import ImageFont
 
 from .geometry import Size, Point, Rectangle, Box
-
-from enum import Enum
 
 TextAlign = Enum("TextAlign", "left right center")
 

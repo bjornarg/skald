@@ -81,7 +81,7 @@ def get_left_box_position(anchor, size, bounds, margin, alignment, avoid,
     choice = Choice(point=point, score=score)
     choice = adjust_y_position(choice, size, bounds, margin, scores.move)
 
-    rect = Rectangle.from_sizes(point=choice.point, size=size)
+    rect = Rectangle.from_sizes(position=choice.point, size=size)
     for element in avoid:
         if rect in element.rectangle:
             choice = Choice(point=choice.point, score=float("inf"))
@@ -102,7 +102,7 @@ def get_right_box_position(anchor, size, bounds, margin, alignment, avoid,
     choice = Choice(point=point, score=score)
     choice = adjust_y_position(choice, size, bounds, margin, scores.move)
 
-    rect = Rectangle.from_sizes(point=choice.point, size=size)
+    rect = Rectangle.from_sizes(position=choice.point, size=size)
     for element in avoid:
         if rect in element.rectangle:
             choice = Choice(point=choice.point, score=float("inf"))
@@ -124,7 +124,7 @@ def get_under_box_position(anchor, size, bounds, margin, alignment, avoid,
     choice = Choice(point=point, score=score)
     choice = adjust_x_position(choice, size, bounds, margin, scores.move)
 
-    rect = Rectangle.from_sizes(point=choice.point, size=size)
+    rect = Rectangle.from_sizes(position=choice.point, size=size)
     for element in avoid:
         if rect in element.rectangle:
             choice = Choice(point=choice.point, score=float("inf"))
@@ -146,7 +146,7 @@ def get_over_box_position(anchor, size, bounds, margin, alignment, avoid,
     choice = Choice(point=point, score=score)
     choice = adjust_x_position(choice, size, bounds, margin, scores.move)
 
-    rect = Rectangle.from_sizes(point=choice.point, size=size)
+    rect = Rectangle.from_sizes(position=choice.point, size=size)
     for element in avoid:
         if rect in element.rectangle:
             choice = Choice(point=choice.point, score=float("inf"))

@@ -46,7 +46,13 @@ class Rectangle(namedtuple("Rectangle", ["x0", "y0", "x1", "y1"])):
         return False
 
     @classmethod
-    def from_sizes(cls, size, point):
+    def from_sizes(cls, size, position):
+        """Create a rectangle with a given size and position.
+
+        :param size: The :py:class:`~skald.geometry.Size` of the rectangle.
+        :param position: The :py:class:`~skald.geometry.Point` representing
+            the position of the rectangle.
+        """
         return cls(
             x0=point.x,
             y0=point.y,
