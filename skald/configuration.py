@@ -34,6 +34,8 @@ def get_color(color, default):
     :param color: Can either be a HTML-style RGB(A) hex-string, or a 3- or
         4-tuple with (red, green, blue, alpha) values from 0 to 255.
     :param default: The default color to use if ``color`` is ``None``.
+    :return: A :py:class:`~skald.configuration.Color` either representing the
+        given ``color`` parameter, or simply the ``default``.
     """
     if color is None:
         return default
@@ -88,6 +90,17 @@ class Font:
 class Tooltip:
     """Defines style of tooltips."""
     def __init__(self, line_spacing=5, padding=5, margin=10, color=None):
+        """
+
+        :param line_spacing: Number of pixels between lines of text.
+        :param padding: Number of pixels from text to border of surrounding
+            box.
+        :param margin: Number of pixels between the tooltip box and the element
+            it annotates.
+        :param color: Color of the tooltip box. See
+            :py:func:`~skald.configuration.get_color` for formats colors can be
+            given in.
+        """
         self.line_spacing = line_spacing
         self.padding = padding
         self.margin = margin

@@ -10,6 +10,12 @@ Position = Enum("Position", "left over right under")
 Alignment = Enum("Alignment", "center top bottom left right")
 
 def get_positions(positions):
+    """Converts positions from string representation to enum.
+
+    :param positions: Either a list or a space-separated string of positions.
+    :return: A list of :py:class:`~skald.definitions.Position` corresponding to
+        the given ``positions``.
+    """
     if positions is None:
         return []
     ret = []
@@ -20,6 +26,12 @@ def get_positions(positions):
     return ret
 
 def get_alignments(alignments):
+    """Convers alignments from string representation to enum.
+
+    :param alignments: Either a list or a space-separated string of alignments.
+    :return: A list of :py:class:`~skald.definitions.Alignment` corresponding
+        to the given ``alignments``.
+    """
     if alignments is None:
         return []
     ret = []
@@ -33,6 +45,20 @@ class Tooltip:
     """A tooltip connected to a element."""
     def __init__(self, lines, positions=None, alignments=None, force=False,
             width=None):
+        """
+
+        :param lines: If a string, it will be split on newlines (``\\n``) to
+            create a list. Can also be an already split. Each represents a
+            single line in the tooltip text.
+        :param positions: Defines possible positions around the element this
+            tooltip is allowed to have.
+            See :py:func:`~skald.definitions.get_positions` for how this
+            argument is parsed.
+        :param alignments: Defines possible alignments with reference to the
+            element this tooltip is allowed to have.
+            See :py:func:`~skald.definitions.get_alignments` for how this
+            argument is parsed.
+        """
         if isinstance(lines, str):
             self.lines = lines.split("\n")
         else:
@@ -46,6 +72,12 @@ class Element:
     """Represents a element on the page."""
     def __init__(self, element=None, location=None, size=None,
             allow_overwrite=False):
+        """
+
+        :param element: A
+            :py:class:`~selenium.webdriver.remote.webelement.WebElement` to
+            add tooltips to.
+        """
         if element is not None:
             self.location = Point(x=element.location["x"], y=element.location["y"])
             self.size = Size(width=element.size["width"], height=element.size["height"])
@@ -56,6 +88,14 @@ class Element:
         self.tooltips = []
 
     def add_tooltip(self, *tooltips):
+        """Add a tooltip to this element.
+
+        :param tooltips: A :py:class:`~skald.definitions.Tooltip` to annotate
+            this element. Can also be either a string or list of strings that
+            will be passed as the ``lines`` argument to
+            :py:meth:`~skald.definitions.Tooltip.__init__` and a new
+            :py:class:`~skald.definitions.Tooltip` will be created.
+        """
         for tooltip in tooltips:
             if isinstance(tooltip, Tooltip):
                 self.tooltips.append(tooltip)
@@ -70,11 +110,32 @@ class Element:
 class Document:
     """A document that documents elements in a screenshot."""
     def __init__(self, name, crop=None):
+        """
+
+        :param name: The name of the document. This will be used to define
+            the path where the resulting document will be saved.
+        :param crop: Specify bounds to crop the
+            :py:class:`~skald.definitions.Screenshot` this document is based
+            on. A 4-tuple of coordinates, such as
+            :py:class:`~skald.geometry.Rectangle`.
+        """
         self.name = name
         self.elements = []
         self.crop = crop
 
     def add_element(self, *elements, tooltip=None):
+        """Add elements to this document.
+
+        :param elements: Elements to be added to the document, can either be a
+            :py:class:`~selenium.webdriver.remote.webelement.WebElement` or a
+            :py:class:`~skald.definitions.Element`.
+        :param tooltip: Tooltip to be used for ``elements``. Passed directly to
+            :py:meth:`~skald.definitions.Element.add_tooltip`, so argument
+            should follow the same format.
+            
+            **Note**: If multiple elements are passed, all of them will be
+            assigned the same tooltip.
+        """
         for element in elements:
             if isinstance(element, Element):
                 if tooltip is not None:

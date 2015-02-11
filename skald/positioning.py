@@ -10,6 +10,12 @@ Avoid = namedtuple("Avoid", ["rectangle", "score"])
 def adjust_x_position(choice, size, bounds, margin, score):
     """Adjusts the position of the box in the horizontal plane to be inside the
     bounds.
+
+    :param choice: The choice to adjust position for.
+    :param size: Size of the element being positioned.
+    :param bounds: Bounds the element has to be within.
+    :param margin: The margin the element has to have from the bounds.
+    :param score: The score it costs to move the element per pixel.
     """
     adjust = 0
     if choice.point.x < margin:
@@ -22,6 +28,12 @@ def adjust_x_position(choice, size, bounds, margin, score):
 def adjust_y_position(choice, size, bounds, margin, score):
     """Adjusts the position of the box in the vertical plane to be inside the
     bounds.
+
+    :param choice: The choice to adjust position for.
+    :param size: Size of the element being positioned.
+    :param bounds: Bounds the element has to be within.
+    :param margin: The margin the element has to have from the bounds.
+    :param score: The score it costs to move the element per pixel.
     """
     adjust = 0
     if choice.point.y < margin:
