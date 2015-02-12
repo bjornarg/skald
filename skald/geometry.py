@@ -60,6 +60,42 @@ class Rectangle(namedtuple("Rectangle", ["x0", "y0", "x1", "y1"])):
             y1=point.y+size.height
         )
 
+    def __sub__(self, other):
+        """Move the rectangle by subtracting from it's position.
+
+        :param other: A two element :py:obj:`list` or :py:obj:`tuple`, e.g.
+            :py:class:`~skald.geometry.Point`.
+        """
+        if not isinstance(other, (list, tuple)) and len(other) == 2:
+            raise TypeError(
+                    "Unsupported operand type(s) for -: '%s' and '%s'" % \
+                    (type(self).__name__, type(other).__name__)
+            )
+        return Rectangle(
+            x0=self.x0-other[0],
+            y0=self.y0-other[1],
+            x1=self.x1-other[0],
+            y1=self.y1-other[1],
+        )
+
+    def __add__(self, other):
+        """Move the rectangle by adding to it's position.
+
+        :param other: A two element :py:obj:`list` or :py:obj:`tuple`, e.g.
+            :py:class:`~skald.geometry.Point`.
+        """
+        if not isinstance(other, (list, tuple)) and len(other) == 2:
+            raise TypeError(
+                    "Unsupported operand type(s) for +: '%s' and '%s'" % \
+                    (type(self).__name__, type(other).__name__)
+            )
+        return Rectangle(
+            x0=self.x0+other[0],
+            y0=self.y0+other[1],
+            x1=self.x1+other[0],
+            y1=self.y1+other[1],
+        )
+
     @property
     def center(self):
         """The :py:class:`~skald.geometry.Point` at the center of the
