@@ -6,6 +6,8 @@ from enum import Enum
 
 from .geometry import Size, Point, Rectangle
 
+from .configuration import read_configuration
+
 Position = Enum("Position", "left over right under")
 Alignment = Enum("Alignment", "center top bottom left right")
 
@@ -270,12 +272,16 @@ class ScreenshotDecoder(json.JSONDecoder):
             ret.append(obj)
         return ret
 
-def save(screenshot, driver):
-    if not os.path.exists(screenshot.path):
-        os.mkdir(screenshot.path)
+def save(screenshot, driver, config_path=None):
+    config = read_configuration(config_path)
+    folder = os.path.join(config.input, screenshot.path)
+    if not os.path.exists(folder):
+        os.makedirs(folder)
 
-    driver.save_screenshot(screenshot.image_path)
-    with open(screenshot.meta_path, "w") as json_file:
+    image_path = os.path.join(config.input, screenshot.image_path)
+    meta_path = os.path.join(config.input, screenshot.meta_path)
+    driver.save_screenshot(image_path)
+    with open(meta_path, "w") as json_file:
         json.dump(screenshot, json_file, cls=ScreenshotEncoder)
 
 def load(path):

@@ -11,8 +11,7 @@ from .positioning import get_box_position, Choice
 from .definitions import load
 
 def get_output_file(image_path, document_name, config):
-    relative_image_path = os.path.relpath(image_path, config.input)
-    relative_image_dir = os.path.dirname(relative_image_path)
+    relative_image_dir = os.path.dirname(image_path)
     output = os.path.join(config.output, relative_image_dir, "%s.png" % document_name)
     return output
 
@@ -109,7 +108,9 @@ def process_screenshots(screenshots, config):
         metadata = load(screenshot["metadata"])
         for document in metadata.documents:
             output = get_output_file(metadata.image_path, document.name, config)
-            process_document(metadata.image_path, document, config, output)
+            process_document(
+                base_image=os.path.join(config.input, metadata.image_path),
+                document=document, config=config, output=output)
 
 def get_screenshots(path):
     """Retrieves all screenshots with JSON metadata from the specified path."""
@@ -121,9 +122,9 @@ def get_screenshots(path):
             file_path = os.path.join(root, name)
             file_name, file_extension = os.path.splitext(file_path)
             if file_extension == ".json":
-                json_files[file_name] = file_path
+                json_files[file_name] = os.path.abspath(file_path)
             elif file_extension == ".png":
-                image_files[file_name] = file_path
+                image_files[file_name] = os.path.abspath(file_path)
     matching_files = []
     for image_file in image_files:
         if image_file in json_files:
