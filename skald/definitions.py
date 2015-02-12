@@ -73,12 +73,15 @@ class Tooltip:
 class Element:
     """Represents a element on the page."""
     def __init__(self, element=None, location=None, size=None,
-            allow_overwrite=False):
+            overwrite_penalty="inf"):
         """
 
         :param element: A
             :py:class:`~selenium.webdriver.remote.webelement.WebElement` to
             add tooltips to.
+        :param overwrite_penalty: The penalty assignet to a tooltip which
+            overwrites this element. The value will be parsed as a
+            :py:obj:`float`.
         """
         if element is not None:
             self.location = Point(x=element.location["x"], y=element.location["y"])
@@ -86,7 +89,7 @@ class Element:
         else:
             self.location = location
             self.size = size
-        self.allow_overwrite = allow_overwrite
+        self.overwrite_penalty = float(overwrite_penalty)
         self.tooltips = []
 
     def add_tooltip(self, *tooltips):
@@ -210,7 +213,7 @@ class ScreenshotEncoder(json.JSONEncoder):
             return {
                 "location": obj.location,
                 "size": obj.size,
-                "allow_overwrite": obj.allow_overwrite,
+                "overwrite_penalty": obj.overwrite_penalty,
                 "tooltips": [self.default(tooltip) for tooltip in obj.tooltips],
             }
         elif isinstance(obj, Tooltip):
@@ -249,11 +252,11 @@ class ScreenshotDecoder(json.JSONDecoder):
         for element in elements:
             location = Point(*element["location"])
             size = Size(*element["size"])
-            allow_overwrite = element.get("allow_overwrite", False)
+            overwrite_penalty = element.get("overwrite_penalty")
             obj = Element(
                 location=location,
                 size=size,
-                allow_overwrite=allow_overwrite
+                overwrite_penalty=overwrite_penalty
             )
             obj.add_tooltip(*self.get_tooltips(element["tooltips"]))
             ret.append(obj)

@@ -154,7 +154,9 @@ def _init_box_position(anchor, size, bounds, margin, position, alignment,
 
     for element in avoid:
         if rectangle in element.rectangle:
-            return None
+            penalty += element.overwrite_penalty
+    if penalty == float("inf"):
+        return None
     return Choice(rectangle=rectangle, penalty=penalty)
 
 def get_box_position(element, tooltip, size, bounds, margin, avoid, penalties):
