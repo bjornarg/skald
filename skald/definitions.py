@@ -123,6 +123,11 @@ class Document:
             :py:class:`~skald.definitions.Screenshot` this document is based
             on. A 4-tuple of coordinates, such as
             :py:class:`~skald.geometry.Rectangle`.
+
+            Each value may also hold a string, either ``.`` or ``*``. ``*``
+            represents the border of the elements in the document plus the
+            margin, while ``.`` represents the value given by the size of the
+            screenshot it's documenting.
         """
         self.name = name
         self.elements = []

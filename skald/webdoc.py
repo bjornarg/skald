@@ -72,15 +72,53 @@ def best_combinations(combinations):
     for area in combination:
         area["textarea"].position = area["choice"].rectangle.position
 
+def get_image_size_from_crop(crop, image_size):
+    new_size = list(crop)
+    if crop.left == "*" or crop.left == ".":
+        new_size[0] = 0
+    if crop.top == "*" or crop.top == ".":
+        new_size[1] = 0
+    if crop.right == "*" or crop.right == ".":
+        new_size[2] = image_size.width
+    if crop.bottom == "*" or crop.bottom == ".":
+        new_size[3] = image_size.height
+    return Rectangle(*new_size)
+
+def get_actual_crop_area(crop, image_size, all_elements, margin):
+    crop = list(crop)
+    if crop[0] == "*":
+        crop[0] = min([r.left for r in all_elements]) - margin
+    elif crop[0] == ".":
+        crop[0] = 0
+
+    if crop[1] == "*":
+        crop[1] = min([r.top for r in all_elements]) - margin
+    elif crop[1] == ".":
+        crop[1] = 0
+
+    if crop[2] == "*":
+        crop[2] = max([r.right for r in all_elements]) + margin
+    elif crop[2] == ".":
+        crop[2] = image_size.width
+
+    if crop[3] == "*":
+        crop[3] = max([r.bottom for r in all_elements]) + margin
+    elif crop[3] == ".":
+        crop[3] = image_size.height
+
+    return Rectangle(*crop)
+
 def process_document(base_image, document, config, output):
     """Process a single document and create a documented screenshot."""
     img = Image.open(base_image).copy()
-    if document.crop is not None:
-        img = img.crop(document.crop)
+    image_size = document.crop
+    if image_size is not None:
+        image_size = get_image_size_from_crop(image_size, Size(*img.size))
+    else:
+        image_size = Rectangle.from_sizes(position=Point(0,0),
+                size=Size(*img.size))
 
     draw = ImageDraw.Draw(img)
-
-    image_size = Size(*img.size)
 
     textareas = []
 
@@ -96,8 +134,16 @@ def process_document(base_image, document, config, output):
     combinations = make_combinations(textareas)
     best_combinations(combinations)
 
+    text_area_rectangles = []
+
     for textarea in textareas:
         draw_textarea(draw, textarea, config)
+        text_area_rectangles.append(textarea.rectangle)
+
+    all_elements = text_area_rectangles + [e.rectangle for e in document.elements]
+    crop = get_actual_crop_area(document.crop, Size(*img.size), all_elements, config.tooltip.margin)
+
+    img = img.crop(box=crop)
 
     print("Saving to file", output)
     img.save(output)

@@ -106,7 +106,7 @@ class Rectangle(namedtuple("Rectangle", ["left", "top", "right", "bottom"])):
     @property
     def size(self):
         """The :py:class:`~skald.geometry.Size` of the rectangle."""
-        return Size(width=self.right-self.left, height=self.bottom-self.top)
+        return Size(width=self.width, height=self.height)
 
     @property
     def position(self):
@@ -114,6 +114,14 @@ class Rectangle(namedtuple("Rectangle", ["left", "top", "right", "bottom"])):
         of the rectangle.
         """
         return Point(x=self.left, y=self.top)
+
+    @property
+    def height(self):
+        return self.bottom-self.top
+
+    @property
+    def width(self):
+        return self.right-self.left
 
     @property
     def box(self):
