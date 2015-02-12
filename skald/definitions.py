@@ -105,7 +105,7 @@ class Element:
 
     @property
     def rectangle(self):
-        return Rectangle.from_sizes(size=self.size, point=self.location)
+        return Rectangle.from_sizes(size=self.size, position=self.location)
 
 class Document:
     """A document that documents elements in a screenshot."""

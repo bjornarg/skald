@@ -16,7 +16,7 @@ class TextArea:
         self.text = text
         self.wrapper = wrapper
         self.position = Point(0, 0)
-        self._choices = []
+        self.choices = []
 
     @classmethod
     def from_lines(cls, lines, font, line_spacing, **kwargs):
@@ -86,13 +86,4 @@ class TextArea:
 
     @property
     def rectangle(self):
-        return Rectangle.from_sizes(size=self.size, point=self.position)
-
-    @property
-    def choices(self):
-        return self._choices
-
-    @choices.setter
-    def choices(self, choices):
-        choices.sort(key=lambda x: x.score)
-        self._choices = [choice for choice in choices if choice.score < float("inf")]
+        return Rectangle.from_sizes(size=self.size, position=self.position)

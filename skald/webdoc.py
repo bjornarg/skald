@@ -37,7 +37,8 @@ def get_textarea(tooltip, element, bounds, config, avoid):
         align=TextAlign.center)
 
     textarea.choices = get_box_position(element, tooltip, textarea.size,
-            bounds, config.tooltip.margin, avoid=avoid, scores=config.scores)
+            bounds, config.tooltip.margin, avoid=avoid,
+            penalties=config.penalties)
 
     return textarea
 
@@ -62,17 +63,15 @@ def best_combinations(combinations):
         for c1 in combination:
             for c2 in combination:
                 if c1["textarea"] != c2["textarea"]:
-                    r1 = Rectangle.from_sizes(point=c1["choice"].point, size=c1["textarea"].size)
-                    r2 = Rectangle.from_sizes(point=c2["choice"].point, size=c2["textarea"].size)
-                    if r1 in r2:
+                    if c1["choice"].rectangle in c2["choice"].rectangle:
                         crash = True
         if not crash:
             indices.add(i)
     combinations = [c for i, c in enumerate(combinations) if i in indices]
-    combinations.sort(key=lambda x: sum([y["choice"].score for y in x]))
+    combinations.sort(key=lambda x: sum([y["choice"].penalty for y in x]))
     combination = combinations[0]
     for area in combination:
-        area["textarea"].position = area["choice"].point
+        area["textarea"].position = area["choice"].rectangle.position
 
 def process_document(base_image, document, config, output):
     """Process a single document and create a documented screenshot."""

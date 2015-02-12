@@ -54,10 +54,10 @@ class Rectangle(namedtuple("Rectangle", ["x0", "y0", "x1", "y1"])):
             the position of the rectangle.
         """
         return cls(
-            x0=point.x,
-            y0=point.y,
-            x1=point.x+size.width,
-            y1=point.y+size.height
+            x0=position.x,
+            y0=position.y,
+            x1=position.x+size.width,
+            y1=position.y+size.height
         )
 
     def __sub__(self, other):

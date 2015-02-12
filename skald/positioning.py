@@ -4,44 +4,41 @@ from collections import namedtuple
 from .geometry import Point, Size, Rectangle
 from .definitions import Position, Alignment
 
-Choice = namedtuple("Choice", ["point", "score"])
-Avoid = namedtuple("Avoid", ["rectangle", "score"])
+Choice = namedtuple("Choice", ["rectangle", "penalty"])
+Avoid = namedtuple("Avoid", ["rectangle", "penalty"])
+Adjustment = namedtuple("Adjustment", ["point", "penalty"])
 
-def adjust_x_position(choice, size, bounds, margin, score):
-    """Adjusts the position of the box in the horizontal plane to be inside the
-    bounds.
+def adjust_x_position(rectangle, bounds, margin):
+    """Find the horizontal adjustment necessary to keep a rectangle within
+    the bounds.
 
-    :param choice: The choice to adjust position for.
-    :param size: Size of the element being positioned.
+    :param rectangle: The choice to adjust position for.
     :param bounds: Bounds the element has to be within.
     :param margin: The margin the element has to have from the bounds.
-    :param score: The score it costs to move the element per pixel.
     """
     adjust = 0
-    if choice.point.x < margin:
-        adjust = margin - choice.point.x
-    elif choice.point.x+size.width+margin > bounds.width:
-        adjust = bounds.width - (choice.point.x + size.width + margin)
-    point = Point(x=choice.point.x+adjust, y=choice.point.y)
-    return Choice(point=point, score=choice.score + abs(adjust) * score)
+    if rectangle.x0 < margin:
+        adjust = margin - rectangle.x0
+    elif rectangle.x1+margin > bounds.width:
+        adjust = bounds.width - (rectangle.x1 + margin)
 
-def adjust_y_position(choice, size, bounds, margin, score):
-    """Adjusts the position of the box in the vertical plane to be inside the
+    return Point(x=adjust, y=0)
+
+def adjust_y_position(rectangle, bounds, margin):
+    """Find the vertical adjustment necessary to keep a rectangle within
     bounds.
 
-    :param choice: The choice to adjust position for.
-    :param size: Size of the element being positioned.
+    :param rectangle: The choice to adjust position for.
     :param bounds: Bounds the element has to be within.
     :param margin: The margin the element has to have from the bounds.
-    :param score: The score it costs to move the element per pixel.
     """
     adjust = 0
-    if choice.point.y < margin:
-        adjust = margin - choice.point.y
-    elif choice.point.y+size.height+margin > bounds.height:
-        adjust = bounds.height - (choice.point.y + size.height + margin)
-    point = Point(x=choice.point.x, y=choice.point.y+adjust)
-    return Choice(point=point, score=choice.score + abs(adjust) * score)
+    if rectangle.y0 < margin:
+        adjust = margin - rectangle.y0
+    elif rectangle.y1+margin > bounds.height:
+        adjust = bounds.height - (rectangle.y1 + margin)
+
+    return Point(x=0, y=adjust)
 
 def vertical_align(anchor, size, alignment):
     """Finds the vertical position of `box` to be aligned with `anchor`
@@ -65,117 +62,102 @@ def horizontal_align(anchor, size, alignment):
     else:
         return anchor.center.x - size.width / 2
 
-def get_left_box_position(anchor, size, bounds, margin, alignment, avoid,
-        scores):
-    x = anchor.x0 - size.width - margin
-    y = vertical_align(anchor, size, alignment)
-    point = Point(x, y)
+def align_over_position(anchor, size, alignment, margin):
+    """Find the position of a rectangle over a given anchor.
 
-    score = 0
-
-    if x < 0:
-        return Choice(point=point, score=float("inf"))
-    if alignment in (Alignment.left, Alignment.right):
-        return Choice(point=point, score=float("inf"))
-
-    choice = Choice(point=point, score=score)
-    choice = adjust_y_position(choice, size, bounds, margin, scores.move)
-
-    rect = Rectangle.from_sizes(position=choice.point, size=size)
-    for element in avoid:
-        if rect in element.rectangle:
-            choice = Choice(point=choice.point, score=float("inf"))
-    return choice
-
-def get_right_box_position(anchor, size, bounds, margin, alignment, avoid,
-        scores):
-    x = anchor.x1 + margin
-    y = vertical_align(anchor, size, alignment)
-    point = Point(x, y)
-    score = 0
-
-    if x + size.width > bounds.width:
-        return Choice(point=point, score=float("inf"))
-    if alignment in (Alignment.left, Alignment.right):
-        return Choice(point=point, score=float("inf"))
-
-    choice = Choice(point=point, score=score)
-    choice = adjust_y_position(choice, size, bounds, margin, scores.move)
-
-    rect = Rectangle.from_sizes(position=choice.point, size=size)
-    for element in avoid:
-        if rect in element.rectangle:
-            choice = Choice(point=choice.point, score=float("inf"))
-    return choice
-
-def get_under_box_position(anchor, size, bounds, margin, alignment, avoid,
-        scores):
-    x = horizontal_align(anchor, size, alignment)
-    y = anchor.y1 + margin
-
-    point = Point(x, y)
-    score = 0
-
-    if y + size.height > bounds.height:
-        return Choice(point=point, score=float("inf"))
-    if alignment in (Alignment.top, Alignment.bottom):
-        return Choice(point=point, score=float("inf"))
-
-    choice = Choice(point=point, score=score)
-    choice = adjust_x_position(choice, size, bounds, margin, scores.move)
-
-    rect = Rectangle.from_sizes(position=choice.point, size=size)
-    for element in avoid:
-        if rect in element.rectangle:
-            choice = Choice(point=choice.point, score=float("inf"))
-    return choice
-
-def get_over_box_position(anchor, size, bounds, margin, alignment, avoid,
-        scores):
+    :param anchor: A :py:class:`~skald.geometry.Rectangle` to anchor the
+        rectangle to.
+    :param size: The :py:class:`~skald.geometry.Size` of the rectangle.
+    :param alignment: The :py:class:`~skald.definitions.Alignment` of the
+        rectangle.
+    :param margin: The margin, in pixels, the rectangle must have from the
+        anchor.
+    """
     x = horizontal_align(anchor, size, alignment)
     y = anchor.y0 - size.height - margin
+    return Point(x=x, y=y)
+def align_under_position(anchor, size, alignment, margin):
+    """Find the position of a rectangle under a given anchor.
 
-    point = Point(x, y)
-    score = 0
-
-    if y < 0:
-        return Choice(point=point, score=float("inf"))
-    if alignment in (Alignment.top, Alignment.bottom):
-        return Choice(point=point, score=float("inf"))
-
-    choice = Choice(point=point, score=score)
-    choice = adjust_x_position(choice, size, bounds, margin, scores.move)
-
-    rect = Rectangle.from_sizes(position=choice.point, size=size)
-    for element in avoid:
-        if rect in element.rectangle:
-            choice = Choice(point=choice.point, score=float("inf"))
-    return choice
-
-def _get_box_position(anchor, size, bounds, margin, positions, alignments,
-        avoid, scores):
-    """Attempts to find the ideal position of a box of `size` anchored to
-    `anchor`.
-
+    :param anchor: A :py:class:`~skald.geometry.Rectangle` to anchor the
+        rectangle to.
+    :param size: The :py:class:`~skald.geometry.Size` of the rectangle.
+    :param alignment: The :py:class:`~skald.definitions.Alignment` of the
+        rectangle.
+    :param margin: The margin, in pixels, the rectangle must have from the
+        anchor.
     """
-    funcs = {
-        Position.left: get_left_box_position,
-        Position.right: get_right_box_position,
-        Position.over: get_over_box_position,
-        Position.under: get_under_box_position,
+    x = horizontal_align(anchor, size, alignment)
+    y = anchor.y1 + margin
+    return Point(x=x, y=y)
+def align_right_position(anchor, size, alignment, margin):
+    """Find the position of a rectangle to the right of a given anchor.
+
+    :param anchor: A :py:class:`~skald.geometry.Rectangle` to anchor the
+        rectangle to.
+    :param size: The :py:class:`~skald.geometry.Size` of the rectangle.
+    :param alignment: The :py:class:`~skald.definitions.Alignment` of the
+        rectangle.
+    :param margin: The margin, in pixels, the rectangle must have from the
+        anchor.
+    """
+    x = anchor.x1 + margin
+    y = vertical_align(anchor, size, alignment)
+    return Point(x=x, y=y)
+def align_left_position(anchor, size, alignment, margin):
+    """Find the position of a rectangle to the left of a given anchor.
+
+    :param anchor: A :py:class:`~skald.geometry.Rectangle` to anchor the
+        rectangle to.
+    :param size: The :py:class:`~skald.geometry.Size` of the rectangle.
+    :param alignment: The :py:class:`~skald.definitions.Alignment` of the
+        rectangle.
+    :param margin: The margin, in pixels, the rectangle must have from the
+        anchor.
+    """
+    x = anchor.x0 - size.width - margin
+    y = vertical_align(anchor, size, alignment)
+    return Point(x=x, y=y)
+
+def _init_box_position(anchor, size, bounds, margin, position, alignment,
+        avoid, penalties):
+    allowed_alignments = {
+        Position.left: (Alignment.top, Alignment.bottom, Alignment.center),
+        Position.right: (Alignment.top, Alignment.bottom, Alignment.center),
+        Position.over: (Alignment.left, Alignment.right, Alignment.center),
+        Position.under: (Alignment.left, Alignment.right, Alignment.center),
     }
-    choices = []
-    for position in positions:
-        for alignment in alignments:
-            choice = funcs.get(position)(anchor=anchor, size=size,
-                    bounds=bounds, margin=margin, alignment=alignment,
-                    avoid=avoid, scores=scores)
-            choices.append(choice)
 
-    choices.sort(key=lambda x: x.score)
-    return choices
+    if alignment not in allowed_alignments[position]:
+        return None
 
-def get_box_position(element, tooltip, size, bounds, margin, avoid, scores):
+    align_positions = {
+        Position.left: align_left_position,
+        Position.right: align_right_position,
+        Position.over: align_over_position,
+        Position.under: align_under_position,
+    }
+
+    point = align_positions[position](anchor, size, alignment, margin)
+    rectangle = Rectangle.from_sizes(size=size, position=point)
+
+    adjust_positions = {
+        Position.left: adjust_y_position,
+        Position.right: adjust_y_position,
+        Position.over: adjust_x_position,
+        Position.under: adjust_x_position,
+    }
+
+    adjustment = adjust_positions[position](rectangle, bounds, margin)
+    rectangle = rectangle + adjustment
+    penalty = sum([abs(p) for p in adjustment]) * penalties.move
+
+    for element in avoid:
+        if rectangle in element.rectangle:
+            return None
+    return Choice(rectangle=rectangle, penalty=penalty)
+
+def get_box_position(element, tooltip, size, bounds, margin, avoid, penalties):
     positions = tuple(Position)
     if tooltip.positions:
         positions = tooltip.positions
@@ -183,12 +165,14 @@ def get_box_position(element, tooltip, size, bounds, margin, avoid, scores):
     if tooltip.alignments:
         alignments = tooltip.alignments
 
-    return _get_box_position(
-            anchor=element.rectangle,
-            size=size,
-            bounds=bounds,
-            margin=margin,
-            positions=positions,
-            alignments=alignments,
-            avoid=avoid,
-            scores=scores)
+    choices = []
+    for position in positions:
+        for alignment in alignments:
+            choice = _init_box_position(anchor=element.rectangle, size=size,
+                    bounds=bounds, margin=margin, alignment=alignment,
+                    avoid=avoid, penalties=penalties, position=position)
+            if choice is not None:
+                choices.append(choice)
+
+    choices.sort(key=lambda x: x.penalty)
+    return choices

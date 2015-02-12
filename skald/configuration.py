@@ -47,14 +47,14 @@ def get_color(color, default):
         else:
             return Color(*color)
 
-class Scores:
-    """Scores are used to calculate how good a tooltip position is.
+class Penalties:
+    """Penalties are used to calculate how good a tooltip position is.
 
     """
     def __init__(self, move=1):
         """
 
-        :param move: Used to adjust the score when a tooltip needs to be moved
+        :param move: Used to adjust the penalty when a tooltip needs to be moved
             from it's initially calculated position, such as moving it from
             outside of bounds to the inside. This is multiplied with the number
             of pixels the tooltip is moved.
@@ -107,7 +107,7 @@ class Tooltip:
         self.color = get_color(color, Color(50, 50, 185, 255))
 
 class Configuration:
-    def __init__(self, font=None, tooltip=None, scores=None,
+    def __init__(self, font=None, tooltip=None, penalties=None,
             input="skald", output="skald"):
         """Create the base configuration class.
 
@@ -117,9 +117,9 @@ class Configuration:
             defining the font to be used.
         :param tooltip: An instance of :py:class:`~skald.configuration.Tooltip`
             defining settings for the tooltips.
-        :param scores: An instance of :py:class:`~skald.configuration.Scores`
-            defining how different adjustments made to tooltips affect the
-            score of the position.
+        :param penalties: An instance of
+            :py:class:`~skald.configuration.Penalties` defining how different
+            adjustments made to tooltips affect the penalty of the position.
         :param input: Path to search for screenshots to document.
         :param output: Path to place created documents.
         """
@@ -130,9 +130,9 @@ class Configuration:
         if tooltip is None:
             tooltip = Tooltip()
         self.tooltip = tooltip
-        if scores is None:
-            scores = Scores()
-        self.scores = scores
+        if penalties is None:
+            penalties = Penalties()
+        self.penalties = penalties
         self.input = input
         self.output = output
 
@@ -146,8 +146,8 @@ class Configuration:
             dictionary["font"] = Font(**dictionary.get("font"))
         if "tooltip" in dictionary:
             dictionary["tooltip"] = Tooltip(**dictionary.get("tooltip"))
-        if "scores" in dictionary:
-            dictionary["scores"] = Punishments(**dictionary.get("scores"))
+        if "penalties" in dictionary:
+            dictionary["penalties"] = Punishments(**dictionary.get("penalties"))
         return cls(**dictionary)
 
 def read_configuration(path=None):
