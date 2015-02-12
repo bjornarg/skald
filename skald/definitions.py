@@ -234,7 +234,10 @@ class ScreenshotDecoder(json.JSONDecoder):
     def get_documents(self, documents):
         ret = []
         for document in documents:
-            obj = Document(document["name"], Rectangle(*document["crop"]))
+            kwargs = {}
+            if document.get("crop") is not None:
+                kwargs["crop"] = Rectangle(*document["crop"])
+            obj = Document(document["name"], **kwargs)
             obj.add_element(*self.get_elements(document["elements"]))
             ret.append(obj)
         return ret
