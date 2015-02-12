@@ -17,10 +17,10 @@ def adjust_x_position(rectangle, bounds, margin):
     :param margin: The margin the element has to have from the bounds.
     """
     adjust = 0
-    if rectangle.x0 < margin:
-        adjust = margin - rectangle.x0
-    elif rectangle.x1+margin > bounds.width:
-        adjust = bounds.width - (rectangle.x1 + margin)
+    if rectangle.left < margin:
+        adjust = margin - rectangle.left
+    elif rectangle.right+margin > bounds.width:
+        adjust = bounds.width - (rectangle.right + margin)
 
     return Point(x=adjust, y=0)
 
@@ -33,10 +33,10 @@ def adjust_y_position(rectangle, bounds, margin):
     :param margin: The margin the element has to have from the bounds.
     """
     adjust = 0
-    if rectangle.y0 < margin:
-        adjust = margin - rectangle.y0
-    elif rectangle.y1+margin > bounds.height:
-        adjust = bounds.height - (rectangle.y1 + margin)
+    if rectangle.top < margin:
+        adjust = margin - rectangle.top
+    elif rectangle.bottom+margin > bounds.height:
+        adjust = bounds.height - (rectangle.bottom + margin)
 
     return Point(x=0, y=adjust)
 
@@ -45,9 +45,9 @@ def vertical_align(anchor, size, alignment):
     according to the given `alignment`.
     """
     if alignment == Alignment.top:
-        return anchor.y0
+        return anchor.top
     elif alignment == Alignment.bottom:
-        return anchor.y1 - size.height
+        return anchor.bottom - size.height
     else:
         return anchor.center.y - size.height / 2
 
@@ -56,9 +56,9 @@ def horizontal_align(anchor, size, alignment):
     according to the given `alignment`.
     """
     if alignment == Alignment.left:
-        return anchor.x0
+        return anchor.left
     elif alignment == Alignment.right:
-        return anchor.x1 - size.width
+        return anchor.right - size.width
     else:
         return anchor.center.x - size.width / 2
 
@@ -74,7 +74,7 @@ def align_over_position(anchor, size, alignment, margin):
         anchor.
     """
     x = horizontal_align(anchor, size, alignment)
-    y = anchor.y0 - size.height - margin
+    y = anchor.top - size.height - margin
     return Point(x=x, y=y)
 def align_under_position(anchor, size, alignment, margin):
     """Find the position of a rectangle under a given anchor.
@@ -88,7 +88,7 @@ def align_under_position(anchor, size, alignment, margin):
         anchor.
     """
     x = horizontal_align(anchor, size, alignment)
-    y = anchor.y1 + margin
+    y = anchor.bottom + margin
     return Point(x=x, y=y)
 def align_right_position(anchor, size, alignment, margin):
     """Find the position of a rectangle to the right of a given anchor.
@@ -101,7 +101,7 @@ def align_right_position(anchor, size, alignment, margin):
     :param margin: The margin, in pixels, the rectangle must have from the
         anchor.
     """
-    x = anchor.x1 + margin
+    x = anchor.right + margin
     y = vertical_align(anchor, size, alignment)
     return Point(x=x, y=y)
 def align_left_position(anchor, size, alignment, margin):
@@ -115,7 +115,7 @@ def align_left_position(anchor, size, alignment, margin):
     :param margin: The margin, in pixels, the rectangle must have from the
         anchor.
     """
-    x = anchor.x0 - size.width - margin
+    x = anchor.left - size.width - margin
     y = vertical_align(anchor, size, alignment)
     return Point(x=x, y=y)
 

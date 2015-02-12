@@ -30,7 +30,7 @@ class Point(namedtuple("Point", ["x", "y"])):
         y = self.y - other.y
         return Point(x, y)
 
-class Rectangle(namedtuple("Rectangle", ["x0", "y0", "x1", "y1"])):
+class Rectangle(namedtuple("Rectangle", ["left", "top", "right", "bottom"])):
     def __contains__(self, other):
         """Check if this rectangle and ``other`` overlaps eachother.
 
@@ -40,8 +40,8 @@ class Rectangle(namedtuple("Rectangle", ["x0", "y0", "x1", "y1"])):
         :param other: Other rectangle to check if overlaps.
         :return: ``True`` if this rectangle and ``other`` overlaps eachother.
         """
-        if self.x0 < other.x1 and self.x1 > other.x0 and \
-                self.y0 < other.y1 and self.y1 > other.y0:
+        if self.left < other.right and self.right > other.left and \
+                self.top < other.bottom and self.bottom > other.top:
             return True
         return False
 
@@ -54,10 +54,10 @@ class Rectangle(namedtuple("Rectangle", ["x0", "y0", "x1", "y1"])):
             the position of the rectangle.
         """
         return cls(
-            x0=position.x,
-            y0=position.y,
-            x1=position.x+size.width,
-            y1=position.y+size.height
+            left=position.x,
+            top=position.y,
+            right=position.x+size.width,
+            bottom=position.y+size.height
         )
 
     def __sub__(self, other):
@@ -72,10 +72,10 @@ class Rectangle(namedtuple("Rectangle", ["x0", "y0", "x1", "y1"])):
                     (type(self).__name__, type(other).__name__)
             )
         return Rectangle(
-            x0=self.x0-other[0],
-            y0=self.y0-other[1],
-            x1=self.x1-other[0],
-            y1=self.y1-other[1],
+            left=self.left-other[0],
+            top=self.top-other[1],
+            right=self.right-other[0],
+            bottom=self.bottom-other[1],
         )
 
     def __add__(self, other):
@@ -90,10 +90,10 @@ class Rectangle(namedtuple("Rectangle", ["x0", "y0", "x1", "y1"])):
                     (type(self).__name__, type(other).__name__)
             )
         return Rectangle(
-            x0=self.x0+other[0],
-            y0=self.y0+other[1],
-            x1=self.x1+other[0],
-            y1=self.y1+other[1],
+            left=self.left+other[0],
+            top=self.top+other[1],
+            right=self.right+other[0],
+            bottom=self.bottom+other[1],
         )
 
     @property
@@ -101,19 +101,19 @@ class Rectangle(namedtuple("Rectangle", ["x0", "y0", "x1", "y1"])):
         """The :py:class:`~skald.geometry.Point` at the center of the
         rectangle.
         """
-        return Point(x=(self.x0+self.x1)/2, y=(self.y0+self.y1)/2)
+        return Point(x=(self.left+self.right)/2, y=(self.top+self.bottom)/2)
 
     @property
     def size(self):
         """The :py:class:`~skald.geometry.Size` of the rectangle."""
-        return Size(width=self.x1-self.x0, height=self.y1-self.y0)
+        return Size(width=self.right-self.left, height=self.bottom-self.top)
 
     @property
     def position(self):
         """The :py:class:`~skald.geometry.Point` for the top left position
         of the rectangle.
         """
-        return Point(x=self.x0, y=self.y0)
+        return Point(x=self.left, y=self.top)
 
     @property
     def box(self):
