@@ -274,12 +274,12 @@ class ScreenshotDecoder(json.JSONDecoder):
 
 def save(screenshot, driver, config_path=None):
     config = read_configuration(config_path)
-    folder = os.path.join(config.input, screenshot.path)
+    folder = os.path.join(config.folder, screenshot.path)
     if not os.path.exists(folder):
         os.makedirs(folder)
 
-    image_path = os.path.join(config.input, screenshot.image_path)
-    meta_path = os.path.join(config.input, screenshot.meta_path)
+    image_path = os.path.join(config.folder, screenshot.image_path)
+    meta_path = os.path.join(config.folder, screenshot.meta_path)
     driver.save_screenshot(image_path)
     with open(meta_path, "w") as json_file:
         json.dump(screenshot, json_file, cls=ScreenshotEncoder)

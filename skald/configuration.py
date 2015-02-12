@@ -108,7 +108,7 @@ class Tooltip:
 
 class Configuration:
     def __init__(self, font=None, tooltip=None, penalties=None,
-            input="skald", output="skald"):
+            folder="skald"):
         """Create the base configuration class.
 
         All ``None`` parameters will be populated with their classes defaults.
@@ -120,8 +120,7 @@ class Configuration:
         :param penalties: An instance of
             :py:class:`~skald.configuration.Penalties` defining how different
             adjustments made to tooltips affect the penalty of the position.
-        :param input: Path to search for screenshots to document.
-        :param output: Path to place created documents.
+        :param folder: Path to put screenshots, documents and metadata.
         """
 
         if font is None:
@@ -133,8 +132,7 @@ class Configuration:
         if penalties is None:
             penalties = Penalties()
         self.penalties = penalties
-        self.input = input
-        self.output = output
+        self.folder = folder
 
     @classmethod
     def from_dict(cls, dictionary):

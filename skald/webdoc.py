@@ -12,7 +12,7 @@ from .definitions import load
 
 def get_output_file(image_path, document_name, config):
     relative_image_dir = os.path.dirname(image_path)
-    output = os.path.join(config.output, relative_image_dir, "%s.png" % document_name)
+    output = os.path.join(config.folder, relative_image_dir, "%s.png" % document_name)
     return output
 
 def draw_textarea(draw, textarea, config):
@@ -109,7 +109,7 @@ def process_screenshots(screenshots, config):
         for document in metadata.documents:
             output = get_output_file(metadata.image_path, document.name, config)
             process_document(
-                base_image=os.path.join(config.input, metadata.image_path),
+                base_image=os.path.join(config.folder, metadata.image_path),
                 document=document, config=config, output=output)
 
 def get_screenshots(path):
