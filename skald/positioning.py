@@ -152,6 +152,10 @@ def _init_box_position(anchor, size, bounds, margin, position, alignment,
     rectangle = rectangle + adjustment
     penalty = sum([abs(p) for p in adjustment]) * penalties.move
 
+    if rectangle.left < bounds.left or rectangle.top < bounds.top or \
+            rectangle.right > bounds.right or rectangle.bottom > bounds.bottom:
+        return None
+
     for element in avoid:
         if rectangle in element.rectangle:
             penalty += element.overwrite_penalty
